@@ -1,0 +1,34 @@
+---
+title: "DS3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Let's make customer support great again
+
+
+This was truly a year like no other. But somethings didn't change. Like the need to earn money.
+
+I wake up, realize that my fridge needs some updates: meat, veggies, maybe a cake and other things that I can't buy for my salary. My 40 hour/week work does not give me any more money no matter how much more I work: it's still 40 hour/week work. However this is not the case with freelancing. As a freelancer, you are free, you can be anyone, and do anything in OASIS - just like Wade from Steven Spielberg's "Ready Player One". 
+
+
+But how to find OASIS? I mean, how to find freelancing platform? Tada🎉 Good news - there are bunch of them. Bad news - well... there are really bunch of them 🙄 5 minute flip in Google shows Upwork, Fiver, Freelancer.com as best options. But should I open account in all three? It doesn't make my life any easier. What does is using NLP to analyze what people are telling about them and then  choosing the best one.
+
+## Introduction
+
+NLP itself is a big sphere. It was difficult for me to find a topic and dataset to do this task. Then I was inspired by these lines in tidytext book, chapter 6:
+ 
+*... vandal has torn the books into individual chapters, and left them in one large pile. How can we restore these disorganized chapters to their original books? *
+
+Therefore, I decided to do my home assignment related to topic modeling. As a data source, I chose Upwork forum. Upwork is an American freelancing platform where freelancers and clients connect in order to conduct business. 
+
+In Upwork forum, freelancers and clients publish their questions in the form of posts.  Each post will have title (1) & content (2) (see image below). I scraped these Upwork forum posts and and planned to label each post with topics using *topic modeling*. I also planned to make sentiment analysis using this data.  
+
+![Upwork posts](index.png)
+
+I collected data via web-scraping. I used Python, Beautiful Soup and other libraries in Jupyter notebook since our course was mainly about NLP using R and we didn't cover much about data collection. Even though I admit that rvest, httr, requests are good R alternatives, I prefer using Python for web-scraping. 
+
+

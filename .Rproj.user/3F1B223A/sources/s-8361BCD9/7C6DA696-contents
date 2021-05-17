@@ -1,0 +1,43 @@
+## Report on the current price of 0.42 BTC in HUF with logging
+
+library(binancer)
+library(jsonlite)
+library(logger)
+library(scales)
+library(checkmate)
+library(mr)
+
+## Helpers functions -----
+
+
+## Write a helper function to look up the price of a USD in HUF with validation and logging and error handling with exponential backoff
+get_usdhuf <- function(retried = 0) {
+  tryCatch({
+    ## httr
+    usdhuf <- fromJSON('https://api.exchangerate.host/latest?base=USD&symbols=HUF')$rates$HUF
+    assert_number(usdhuf, lower = 250, upper = 400)
+  }, error = function(e) {
+    ## str(e)
+    log_error(e$message)
+    Sys.sleep(1 + retried ^ 2)
+    get_usdhuf(retried = retried + 1)
+  })
+  log_info('1 USD={usdhuf} HUF')
+  usdhuf
+}
+
+
+## Contants -----
+
+BITCOINS <- 0.42
+
+## Main ----
+
+log_info('Number of bitcoins: {BITCOINS}') # glue::glue, f-string
+
+usdhuf <- get_usdhuf()
+
+btcusd <- binance_coins_prices()[symbol == 'BTC', usd]
+log_info('1 BTC={dollar(btcusd)}')
+
+log_info('My crypto fortune is {forint(BITCOINS * btcusd * usdhuf)}')
