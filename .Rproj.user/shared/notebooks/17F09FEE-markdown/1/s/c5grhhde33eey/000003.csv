@@ -1,0 +1,11 @@
+"0","df_stop %>%
+  count(word, sort = TRUE) %>%
+  mutate(word = reorder(word, n)) %>%
+  top_n(10) %>% 
+  ggplot(aes(n, word)) +
+  geom_col(fill = '#6fda44') +
+  ggtitle(""Most common words in posts by clients"") +
+  labs(y = NULL)
+"
+"2","Selecting by n
+"

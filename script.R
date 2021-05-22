@@ -2,11 +2,19 @@
 library(dplyr)
 library(stringr)
 library(topicmodels)
-library(dplyr)
 library(tidytext)
+library(textdata)
 
 library(ggplot2)
+library(lubridate)
+library(tidyr)
+# install.packages("ggpubr")
+library(ggpubr)
 
+
+
+
+# Clients -----------------------------------------------------------------
 
 # Read data ---------------------------------------------------------------
 
@@ -22,12 +30,20 @@ library(ggplot2)
 df_clients <- read.csv('D:/CEU/singer semester/unstructured-text-analysis/Final-Project-DS3/clients_data.csv',
                     header = FALSE, encoding = "UTF-8")
 
-
+df_freelancers <- read.csv('D:/CEU/singer semester/unstructured-text-analysis/Final-Project-DS3/freelancers_data.csv',
+                           header = FALSE, encoding = "UTF-8")
+# 864 pages scraped
 
 # colnames(demo_6)
 names(df_clients)[1] <- "post_title"
 names(df_clients)[2] <- "post_date"
 names(df_clients)[3] <- "post_text"
+
+names(df_freelancers)[1] <- "post_title"
+names(df_freelancers)[2] <- "post_date"
+names(df_freelancers)[3] <- "post_text"
+
+
 
 
 
@@ -49,12 +65,29 @@ for(i in 1:nrow(df_clients)){
   df_clients[i, ] <- str_replace_all(df_clients[i, ], "[\n\t]" , "")
 }
 
+# from string to date
+df_clients$post_date <- mdy_hms(df_clients$post_date)
+df_freelancers$post_date <- mdy_hms(df_freelancers$post_date)
+
 # 23
-nchar(df[1, 1])
+# nchar(df[1, 1])
 
 # add post number
 df_post_n <- df_clients %>%
   mutate(post_number = row_number())
+
+# remove line breaks
+for(i in 1:nrow(df_freelancers)){
+  df_freelancers[i, ] <- str_replace_all(df_freelancers[i, ], "[\n\t]" , "")
+}
+
+# 23
+nchar(df[1, 1])
+
+# add post number
+df_f_post_n <- df_freelancers %>%
+  mutate(post_number = row_number())
+
 
 # The first step is using the unnest_token function in the tidytext package to put each word in a separate row. As you can see, the dimensions are now 417902 rows and 4 columns. The unnest token function also performed text cleaning by converting all upper case letters to lower case and removing all special characters and punctuation.
 
@@ -114,29 +147,6 @@ df_stop %>%
 
 
 
-df_freelancers <- read.csv('D:/CEU/singer semester/unstructured-text-analysis/Final-Project-DS3/freelancers_data.csv',
-                                         header = FALSE, encoding = "UTF-8")
-# 864 pages scraped
-
-
-names(df_freelancers)[1] <- "post_title"
-names(df_freelancers)[2] <- "post_date"
-names(df_freelancers)[3] <- "post_text"
-
-
-
-# remove line breaks
-for(i in 1:nrow(df_freelancers)){
-  df_freelancers[i, ] <- str_replace_all(df_freelancers[i, ], "[\n\t]" , "")
-}
-
-# 23
-nchar(df[1, 1])
-
-# add post number
-df_f_post_n <- df_freelancers %>%
-  mutate(post_number = row_number())
-
 # The first step is using the unnest_token function in the tidytext package to put each word in a separate row. As you can see, the dimensions are now 417902 rows and 4 columns. The unnest token function also performed text cleaning by converting all upper case letters to lower case and removing all special characters and punctuation.
 
 # 990259 rows
@@ -191,17 +201,208 @@ df_f_stop %>%
 
 
 
-ggplot(data, aes(x = i, y = beta, fill = ifelse(beta > 0, "Trump", "Obama"))) +
-  geom_bar(stat = "identity", alpha = 0.75) +
-  scale_x_continuous(breaks = data$i, labels = data$word, minor_breaks = NULL) +
-  xlab("") +
-  ylab("Coefficient Estimate") +
-  coord_flip() +
-  scale_fill_manual(
-    guide = guide_legend(title = "Word typically used by:"),
-    values = c("#446093", "#bc3939")
-  ) +
-  theme_bw() +
-  theme(legend.position = "top")
+# ggplot(data, aes(x = i, y = beta, fill = ifelse(beta > 0, "Trump", "Obama"))) +
+#   geom_bar(stat = "identity", alpha = 0.75) +
+#   scale_x_continuous(breaks = data$i, labels = data$word, minor_breaks = NULL) +
+#   xlab("") +
+#   ylab("Coefficient Estimate") +
+#   coord_flip() +
+#   scale_fill_manual(
+#     guide = guide_legend(title = "Word typically used by:"),
+#     values = c("#446093", "#bc3939")
+#   ) +
+#   theme_bw() +
+#   theme(legend.position = "top")
+
+
+# Sentiment Analysis Clients  ------------------------------------------------------
+
+
+
+get_sentiments("afinn")
+
+get_sentiments("bing")
+
+get_sentiments("nrc")
+
+nrc_joy <- get_sentiments("nrc") %>% 
+  filter(sentiment == "joy")
+
+df_stop %>%
+  inner_join(nrc_joy) %>%
+  count(word, sort = TRUE) %>% 
+  top_n(10)
+  
+
+str(df_stop$post_date)
+
+clients_bing <- df_stop %>% 
+  inner_join(get_sentiments("bing")) %>% 
+  count(word, sentiment, sort = TRUE) %>% 
+  ungroup()
+# %>%
+# arrange(sentiment)
+
+clients_bing_word_counts <- df_stop %>% 
+  inner_join(get_sentiments("bing")) %>% 
+  count(word, sentiment, sort = TRUE) %>% 
+  ungroup()
+
+
+
+bing_word_counts <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+clients_nrc <- df_stop %>% 
+  inner_join(get_sentiments("nrc")) 
+
+clients_nrc %>%
+  select(word, sentiment) %>% 
+  count(word, sort = TRUE) 
+
+
+
+clients_nrc %>%
+    count(word, sentiment, sort = TRUE) 
+
+# Top 10 posts with most negative words. We see post number. we can further investigate who had what problem and try to solve these issues faster than others
+client_sentiment <- df_stop %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(post_title, post_number, post_date,  sentiment) %>% 
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative) %>% 
+  arrange(sentiment) %>% 
+  slice(1:10)
+
+
+# ggplot(client_sentiment, aes(post_date, sentiment, fill = post_title)) +
+#   geom_col(show.legend = FALSE) +
+#   facet_wrap(~post_title, ncol = 2, scales = "free_x")
+
+# ggplot(client_sentiment, aes(post_title, sentiment, fill = post_title)) +
+#   geom_col(show.legend = FALSE) +
+#   facet_wrap(~post_title, ncol = 2, scales = "free_x")
+
+clients_bing_df <- df_stop %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(post_title, post_number, post_date,  sentiment) %>% 
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative) %>% 
+  arrange(sentiment)
+
+
+# distribution with mean (red dashed line)
+# distribution is close to normal. 
+# sentiment is on average negative
+clients_bing_plot <- ggplot(clients_bing_df, aes(x=sentiment)) + 
+  geom_histogram(binwidth= 1, colour="black", fill="white") + 
+  geom_vline(aes(xintercept=mean(sentiment, na.rm=T)),   
+             color="red", linetype="dashed", size=1)
+
+# because there more negative sentiments 
+table(sign(client_sentiment$sentiment))
+
+
+# Sentiment Analysis Freelancers ---------------------------------------------------------------------
+
+
+freelancers_bing_df <- df_f_stop %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(post_title, post_number, post_date,  sentiment) %>% 
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative) %>% 
+  arrange(sentiment)
+
+
+# this time average sentiment is less negative - maybe because we have more records for freelancers compared to clients
+freelancers_bing_plot <- ggplot(freelancers_bing_df, aes(x=sentiment)) + 
+  geom_histogram(binwidth= 1, colour="black", fill="white") + 
+  geom_vline(aes(xintercept=mean(sentiment, na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1)
+
+
+
+# Comparing ---------------------------------------------------------------
+
+clients_nrc_plot <- df_stop %>%
+  inner_join(get_sentiments("nrc")) %>%
+  count(post_title, post_number, post_date,  sentiment) %>% 
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative) %>% 
+  arrange(sentiment) %>% 
+  ggplot(aes(x=sentiment)) + 
+  geom_histogram(binwidth= 1, colour="black", fill="white") + 
+  geom_vline(aes(xintercept=mean(sentiment, na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1)
+
+freelancers_nrc_plot <- df_f_stop %>%
+  inner_join(get_sentiments("nrc")) %>%
+  count(post_title, post_number, post_date,  sentiment) %>% 
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative) %>% 
+  arrange(sentiment) %>% 
+  ggplot(aes(x=sentiment)) + 
+  geom_histogram(binwidth= 1, colour="black", fill="white") + 
+  geom_vline(aes(xintercept=mean(sentiment, na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1)
+
+
+
+clients_afinn_plot <- df_stop %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(post_title) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN") %>% 
+  ggplot(aes(x=sentiment)) + 
+  geom_histogram(binwidth= 1, colour="black", fill="white") + 
+  geom_vline(aes(xintercept=mean(sentiment, na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1)
+
+freelancers_afinn_plot <- df_f_stop %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(post_title) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN") %>% 
+  filter(sentiment < 60) %>% 
+  ggplot(aes(x=sentiment)) + 
+  geom_histogram(binwidth= 1, colour="black", fill="white") + 
+  geom_vline(aes(xintercept=mean(sentiment, na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1)
+
+table(sign(clients_afinn$sentiment))
+
+
+ggarrange(clients_bing_plot, freelancers_bing_plot,
+          clients_nrc_plot, freelancers_nrc_plot, 
+          clients_afinn_plot, freelancers_afinn_plot,
+          labels = c("A", "B", "C", "A", "B", "C"),
+          ncol = 3, nrow = 2)
+
+
+
+book_words <- austen_books() %>%
+  unnest_tokens(word, text) %>%
+  count(book, word, sort = TRUE)
+
+
+total_words <- book_words %>% 
+  group_by(book) %>% 
+  summarize(total = sum(n))
+
+
+post_words_c <- df_unnest %>% 
+  count(post_title, word, sort = TRUE)
+
+total_words_c <- post_words_c %>% 
+  group_by(post_title) %>% 
+  summarize(total = sum(n))
+
+post_words_c <- left_join(post_words_c, total_words_c)
+
+ggplot(post_words_c, aes(n/total)) +
+  geom_histogram(show.legend = FALSE) + 
+  scale_x_continuous(limits = c(0, 0.2))
 
 

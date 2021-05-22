@@ -1,0 +1,7 @@
+"0",""
+"0","post_words_c <- left_join(post_words_c, total_words_c)"
+"2","Joining, by = ""post_title""
+"
+"0","ggplot(post_words_c, aes(n/total)) +"
+"0","  geom_histogram(show.legend = FALSE) + "
+"0","  scale_x_continuous(limits = c(0, 0.2))"

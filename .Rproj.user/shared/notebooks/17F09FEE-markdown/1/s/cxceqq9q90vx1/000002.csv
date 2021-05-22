@@ -1,0 +1,2 @@
+"0","plot_grid(clients_bing_plot, freelancers_bing_plot, "
+"0","          align = ""h"", ncol = 2, rel_widths = c(1/5, 1/5))"

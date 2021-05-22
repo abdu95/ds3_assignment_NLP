@@ -1,0 +1,7 @@
+"0",""
+"0","clients_bing_plot <- ggplot(client_sentiment, aes(x=sentiment)) + "
+"0","  geom_histogram(binwidth= 1, colour=""black"", fill=""white"") + "
+"0","  geom_vline(aes(xintercept=mean(sentiment, na.rm=T)),   "
+"0","             color=""red"", linetype=""dashed"", size=1) + "
+"0","  ggtitle('Sentiment in clients text using bing') "
+"0","clients_bing_plot"
